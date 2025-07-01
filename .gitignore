@@ -1,0 +1,9 @@
+# 仮想環境
+venv/
+# データベースファイル
+*.db
+# Pythonが生成するキャッシュ
+__pycache__/
+*.pyc
+# VS Codeの作業用フォルダ
+.vscode/
