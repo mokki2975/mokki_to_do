@@ -44,8 +44,31 @@ with app.app_context():  #アプリケーション起動時に、データベー
 @app.route( '/' )  #to-doリストの表示
 def index():
     db = get_db()
-    tasks = db.execute('SELECT id, task, done FROM tasks ORDER BY id DESC').fetchall()  #IDの降順でソート
-    return render_template('index.html', tasks = tasks)
+    #タスクの並び替え/フィルタリング機能
+    status_filter = request.args.get('status', 'all') #'all', 'done', 'active'
+    sort_by = request.args.get('sort', 'newest')  #'newest', 'oldest', 'alphabetical'
+
+    query = 'SELECT id, task, done FROM tasks'
+    params = []
+
+    if status_filter == 'done':
+        query += ' WHERE done = ?'
+        params.append(1)
+    elif status_filter == 'active':
+        query += ' WHERE done = ?'
+        params.append(0)
+
+    if sort_by == 'newest':
+        query += ' ORDER BY id DESC'
+    elif sort_by == 'oldest':
+        query += ' ORDER BY id ASC'
+    elif sort_by == 'alphabetical':
+        query += ' ORDER BY task ASC'
+
+    tasks = db.execute(query, params).fetchall()
+
+    return render_template('index.html', tasks = tasks,
+                           current_status=status_filter, current_sort=sort_by)
 
 @app.route('/add', methods=['POST'])   #タスク追加
 def add_task():
