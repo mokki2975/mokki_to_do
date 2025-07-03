@@ -92,6 +92,33 @@ def delete_task(task_id):
         db.rollback()
     return redirect(url_for('index'))
 
+@app.route('/edit/<int:task_id>', methods = ['GET', 'POST'])
+def edit_task(task_id):
+    db = get_db()
+    task = db.execute('SELECT id, task, done FROM tasks WHERE id = ?', (task_id,)).fetchone()
+
+    if task is None:
+        flash('指定されたタスクが見つかりません。', 'error')
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':  #フォームからデータを取得し、データベース更新
+        updated_task_content = request.form.get('task_content')
+        if not updated_task_content:
+            flash('タスクの内容を入力してください！', 'error')
+            return render_template('edit.html', task = task)  #タスクidは渡す
+        
+        try:
+            db.execute('UPDATE tasks SET task = ? WHERE id = ?', (updated_task_content, task_id))
+            db.commit()
+            flash('タスクを更新しました！', 'success')
+        except sqlite3.Error as e:
+            flash(f'タスクの更新中にエラーが発生しました: {e}', 'error')
+            print(f'データベースエラー: {e}')
+            db.rollback()
+        return redirect(url_for('index'))
+    else:
+        return render_template('edit.html', task = task)  #GETリクエストなら編集フォームを表示
+
 if __name__ == '__main__':
     print("開発サーバを起動します")
-    app.run(debug = True)
+    app.run(debug = True, host='127.0.0.1', port=5000)

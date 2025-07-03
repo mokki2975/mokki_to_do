@@ -1,0 +1,25 @@
+# Docker Composeファイルのバージョン指定
+    version: '3.8'
+
+    # サービス（コンテナ）の定義
+    services:
+      web:
+        # 現在のディレクトリにあるDockerfileを使ってイメージをビルド
+        build: .
+        # ホストのポート5000をコンテナのポート5000にマッピング
+        ports:
+          - "5000:5000"
+        # ホストの現在のディレクトリをコンテナの/appにマウント
+        # これにより、ホスト側のコードを変更するとコンテナ内にも反映される（開発時に便利）
+        volumes:
+          - .:/app
+        # コンテナ起動時に実行するコマンド（DockerfileのCMDを上書き）
+        # 開発時には自動リロードが有効なflask run --debugを使う
+        command: flask run --host=0.0.0.0 --port=5000 --debug
+        # 環境変数を設定
+        environment:
+          FLASK_APP: app
+          FLASK_ENV: development # 開発環境であることを示す（Flask 1.x以降で推奨）
+          # FLASK_DEBUG: 1 # Flask 1.x以前でデバッグモードを有効にする場合
+          SECRET_KEY: mokki2975 # app.pyのsecret_keyと同じ値を設定
+    
