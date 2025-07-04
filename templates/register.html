@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ユーザー登録 - To-Doリスト</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: "Inter", sans-serif;}
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm text-center ">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">ユーザー登録</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="mb-4">
+                    {% for category, message in messages %}
+                        <li class="p-2 rounded-md {% if category == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ message }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('register') }}" method="post" class="space-y-4">
+            <div>
+                <label for="username" class="block text-left text-sm font-medium text-gray-700">ユーザー名:</label>
+                <input type="text" id="username" name="username" required
+                       value="{{ username }}"
+                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label for="password" class="block text-left text-sm font-medium text-gray-700">パスワード:</label>
+                <input type="password" id="password" name="password" required
+                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-300">
+                登録する
+            </button>
+        </form>
+
+        <p class="mt-4 text-sm text-gray-600">
+            既にアカウントをお持ちですか？<a href="{{ url_for('login') }}" class="text-blue-500 hover: underline">ログインはこちら</a>
+        </p>
+    </div>
+</body>
+</html>

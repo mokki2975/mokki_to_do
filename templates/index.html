@@ -19,6 +19,16 @@
     <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">To-Doリスト</h1>
 
+        <div class="text-right mb-4">
+            {% if session.username %}
+                <span class="text-gray-700 mr-2">こんにちは、{{ session.username }}さん！</span>
+                <a href="{{ url_for('logout') }}" class="text-blue-500 hover:underline">ログアウト</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="text-blue-500 hover:underline mr-2">ログイン</a>
+                <a href="{{ url_for('register') }}" class="text-blue-500 hover:underline">新規登録</a>
+            {% endif %}
+        </div>
+
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <ul class="mb-4">
@@ -31,6 +41,7 @@
             {% endif %}
         {% endwith %}
 
+        {% if session.user_id %}
         <form action="{{ url_for('add_task') }}"method="post" class="mb-6 flex space-x-2">
             <!--<input type="text">: ユーザーがテキストを入力するためのフィールドを作成します。
 
@@ -151,7 +162,19 @@ transition duration-300: ホバー時の色の変化などを、300ミリ秒か�
                 {% endfor %}
             </ul>
         {% else %}
-            <p class="text-center text-gray-500">まだタスクがありません。新しいタスクを追加しましょう！</p>
+            <p class="text-center text-gray-500 mb-4">
+                {% if session.user_id %}
+                    まだタスクがありません。新しいタスクを追加しましょう！
+                {% else %}
+                    ログインしてタスクを管理しましょう！
+                {% endif %}
+            </p>
+        {% endif %}
+
+        {% else %}
+            <p class="text-center text-gray-600 text-lg mt-8">
+                To-Doリストを利用するには、<a href="{{ url_for('login') }}" class="bg-blue-500 hover:underline">ログイン</a>または<a href="{{url_for('register') }}" class="text-blue-500 hover:underline ml-1">新規登録</a>してください。
+            </p>
         {% endif %}
 
         <p class="mt-8 text-sm text-gray-500 text-center">シンプルなTo-Doリスト with Gemini</p>
