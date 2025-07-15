@@ -25,20 +25,28 @@
             {% endif %}
         {% endwith %}
 
-        <form action="{{ url_for('login' )}}" method="post" class="space-y-4">
+        <form action="{{ url_for('login') }}" method="post" class="space-y-4">
+            {{ form.csrf_token }} {# CSRFトークンを自動で挿入 #}
+
             <div>
-                <label for="username" class="block text-left text-sm font-medium text-gray-700">ユーザー名:</label>
-                <input type="text" id="username" name="username" required
-                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                {{ form.username.label(class="block text-left text-sm font-medium text-gray-700") }}
+                {{ form.username(class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", placeholder="ユーザー名を入力") }}
+                {% if form.username.errors %}
+                    {% for error in form.username.errors %}
+                        <p class="text-red-600 text-sm mt-1 text-left">{{ error }}</p> 
+                    {% endfor %}
+                {% endif %}
             </div>
             <div>
-                <label for="password" class="block text-left text-sm font-medium text-gray-700">パスワード:</label>
-                <input type="password" id="password" name="password" required
-                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                {{ form.password.label(class="block text-left text-sm font-medium text-gray-700") }}
+                {{ form.password(class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", placeholder="パスワードを入力") }}
+                {% if form.password.errors %}
+                    {% for error in form.password.errors %}
+                        <p class="text-red-600 text-sm mt-1 text-left">{{ error }}</p> 
+                    {% endfor %}
+                {% endif %}
             </div>
-            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-300">
-                ログインする
-            </button>
+            {{ form.submit(class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-300") }}
         </form>
 
         <p class="mt-4 text-sm text-gray-600">
