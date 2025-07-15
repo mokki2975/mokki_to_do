@@ -42,59 +42,18 @@
         {% endwith %}
 
         {% if session.user_id %}
-        <form action="{{ url_for('add_task') }}"method="post" class="mb-6 flex space-x-2">
-            <!--<input type="text">: ユーザーがテキストを入力するためのフィールドを作成します。
-
-name="task_content": この入力フィールドの名前を task_content と定義します。ユーザーがフォームを送信した際に、この名前と入力された値がセットになってサーバー（Flaskのapp.py）に送られます。Flask側では request.form.get('task_content') のようにしてこの値を取得します。
-
-placeholder="新しいタスクを入力": 入力フィールドが空の場合に表示される、薄い色のヒントテキストです。ユーザーに何を入力すればよいかを示します。
-
-class="...": Tailwind CSSのユーティリティクラスを適用して、見た目を整えています。
-
-flex-grow: Flexコンテナ（親要素の<form>がflexクラスを持つ）内で、利用可能なスペースを最大限に占有するように要素を拡張します。これにより、入力フィールドがボタンの隣で幅いっぱいに広がります。
-
-p-2: 内側のパディング（余白）を全方向に設定します。
-
-border: 境界線（ボーダー）を追加します。
-
-border-gray-300: 境界線の色を薄い灰色（Tailwindのグレーパレットの300番）に設定します。
-
-rounded-md: 角を丸くします（中程度の丸み）。
-
-focus:outline-none: 入力フィールドがフォーカスされたときにブラウザのデフォルトのアウトライン（枠線）を非表示にします。
-
-focus:ring-2: 入力フィールドがフォーカスされたときに、要素の周りにリング状の影（幅2px）を表示します。
-
-focus:ring-blue-500: フォーカス時のリングの色を青色（Tailwindのブルーパレットの500番）に設定します。
-
-required: この属性があるため、ユーザーがこのフィールドに何も入力せずにフォームを送信しようとすると、ブラウザが自動的に入力を促します（HTML5のバリデーション機能）。-->
-            <input type="text" name="task_content" placeholder="新しいタスクを入力" class="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            <!--<button type="submit">: フォームを送信するためのボタンを作成します。このボタンがクリックされると、親の<form>要素のaction属性で指定されたURL (/add) に、method="post"で指定されたHTTPメソッド（POST）でデータが送信されます。
-
-追加: ボタンに表示されるテキストです。
-
-class="...": Tailwind CSSのユーティリティクラスを適用して、見た目を整えています。
-
-bg-blue-500: 背景色を青色（Tailwindのブルーパレットの500番）に設定します。
-
-hover:bg-blue-600: マウスカーソルがボタンに乗ったとき（ホバー時）に、背景色を少し濃い青色（600番）に変化させます。
-
-text-white: テキストの色を白色に設定します。
-
-font-bold: テキストを太字にします。
-
-py-2: 垂直方向（上下）のパディングを2単位設定します。
-
-px-4: 水平方向（左右）のパディングを4単位設定します。
-
-rounded-md: 角を丸くします（中程度の丸み）。
-
-shadow-md: 中程度の影を要素に追加します。
-
-transition duration-300: ホバー時の色の変化などを、300ミリ秒かけて滑らかにアニメーションさせます。-->
-            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-300">
-                追加
-            </button>
+            
+            
+            <<form action="{{ url_for('add_task') }}" method="post" class="mb-6 flex space-x-2">
+                {{ task_form.csrf_token }} {# CSRFトークンを自動で挿入 #}
+                {{ task_form.task_content(class="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder="新しいタスクを入力") }}
+                {{ task_form.submit(class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-300") }}
+            </form>
+            {% if task_form.task_content.errors %}
+                {% for error in task_form.task_content.errors %}
+                    <p class="text-red-600 text-sm mt-1 text-left mb-4">{{ error }}</p> {# ★修正点: 直接Tailwindクラスを適用 #}
+                {% endfor %}
+            {% endif %}
         </form>
 
         <div class="mb-4 text-center">
@@ -140,40 +99,43 @@ transition duration-300: ホバー時の色の変化などを、300ミリ秒か�
         </div>
         
         {% if tasks %}
-            <ul class="space-y-3">
-                {% for task in tasks %}
-                    <li class="flex items-center justify-between p-3 bg-gray-50 rounded-md shadow-sm border border-gray-200">
-                        <span class="flex-grow text-lg {% if task.done %}task-done{% endif %}">{{ task.task }}</span>
-                        <div class="flex items-center space-x-2">
-                            <a href="{{ url_for('edit_task', task_id=task.id)}}"
-                               class="bg-gray-400 hover:bg-gray-500 text-white text-sm font-bold py-1 px-3 rounded-md transition duration-300">
-                                編集
-                            </a>
-                            <a href="{{ url_for('toggle_task', task_id=task.id)}}"
-                               class="{% if task.done %}bg-yellow-500 hover:bg-yellow-600{% else %}bg-green-500 hover:bg-green-600{% endif %} text-white text-sm font-bold py-1 px-3 rounded-md transition duration-300">
-                                {% if task.done %}未完了に{% else %}完了に{% endif %}
-                            </a>
-                            <a href="{{ url_for('delete_task', task_id=task.id) }}"
-                               class="bg-red-500 hover:bg-red-600 text-white text-sm font-bold py-1 px-3 rounded-md transition duration-300">
-                                削除
-                            </a>
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="text-center text-gray-500 mb-4">
-                {% if session.user_id %}
-                    まだタスクがありません。新しいタスクを追加しましょう！
-                {% else %}
-                    ログインしてタスクを管理しましょう！
-                {% endif %}
-            </p>
-        {% endif %}
+                <ul class="space-y-3">
+                    {% for task in tasks %}
+                        <li class="flex items-center justify-between p-3 bg-gray-50 rounded-md shadow-sm border border-gray-200">
+                            <span class="flex-grow text-lg {% if task.done %}task-done{% endif %}">{{ task.task }}</span>
+                            <div class="flex items-center space-x-2">
+                                <!-- 編集ボタン -->
+                                <a href="{{ url_for('edit_task', task_id=task.id) }}" 
+                                   class="bg-gray-400 hover:bg-gray-500 text-white text-sm font-bold py-1 px-3 rounded-md transition duration-300">
+                                    編集
+                                </a>
+                                <!-- 完了/未完了切り替えボタン -->
+                                <a href="{{ url_for('toggle_task', task_id=task.id) }}" 
+                                   class="{% if task.done %}bg-yellow-500 hover:bg-yellow-600{% else %}bg-green-500 hover:bg-green-600{% endif %} text-white text-sm font-bold py-1 px-3 rounded-md transition duration-300">
+                                    {% if task.done %}未完了に{% else %}完了に{% endif %}
+                                </a>
+                                <!-- 削除ボタン -->
+                                <a href="{{ url_for('delete_task', task_id=task.id) }}" 
+                                   class="bg-red-500 hover:bg-red-600 text-white text-sm font-bold py-1 px-3 rounded-md transition duration-300">
+                                    削除
+                                </a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-center text-gray-500 mt-4">
+                    {% if session.user_id %}
+                        まだタスクがありません。新しいタスクを追加しましょう！
+                    {% else %}
+                        ログインしてタスクを管理しましょう！
+                    {% endif %}
+                </p>
+            {% endif %}
 
-        {% else %}
+        {% else %} {# ログインしていない場合 #}
             <p class="text-center text-gray-600 text-lg mt-8">
-                To-Doリストを利用するには、<a href="{{ url_for('login') }}" class="bg-blue-500 hover:underline">ログイン</a>または<a href="{{url_for('register') }}" class="text-blue-500 hover:underline ml-1">新規登録</a>してください。
+                To-Doリストを利用するには、<a href="{{ url_for('login') }}" class="text-blue-500 hover:underline">ログイン</a>または<a href="{{ url_for('register') }}" class="text-blue-500 hover:underline ml-1">新規登録</a>してください。
             </p>
         {% endif %}
 

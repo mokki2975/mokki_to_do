@@ -12,17 +12,6 @@
         }
     </style>
 </head>
-<!--bg-gray-100: 背景色を薄い灰色（Tailwindのグレーパレットの100番）に設定します。
-
-min-h-screen: 要素の最小の高さをビューポート（画面）の高さ全体に設定します。これにより、コンテンツが少なくてもページ全体が背景色で覆われます。
-
-flex: 要素をFlexコンテナとして設定します。これにより、子要素（この場合は div）をFlexboxのルールに従って配置できるようになります。
-
-items-center: Flexコンテナの子要素を、交差軸（この場合は垂直方向）の中央に配置します。
-
-justify-center: Flexコンテナの子要素を、主軸（この場合は水平方向）の中央に配置します。
-
-p-4: 要素の内側の余白（パディング）を全方向（上下左右）に設定します。4 はTailwindのデフォルト設定で 1rem または 16px に相当します -->
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
     <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">タスク編集</h1>
@@ -40,17 +29,23 @@ p-4: 要素の内側の余白（パディング）を全方向（上下左右）
         {% endwith %}
 
         <form action="{{ url_for('edit_task', task_id=task.id)}}" method="post" class="space-y-4">
-            <label for="task_content" class="block text-lg font-medium text-gray-700">タスク内容</label>
-            <input type="text" id="task_content" name="task_content"
-                   value="{{ task.task }}"
-                   class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg" required>
+            {{ form.csrf_token }} 
+
+            <div>
+                {{ form.task_content.label(class="block text-lg font-medium text-gray-700") }}
+                {{ form.task_content(class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg", placeholder="タスク内容を入力") }}
+                {% if form.task_content.errors %}
+                    {% for error in form.task_content.errors %}
+                        <p class="text-red-600 text-sm mt-1 text-left">{{ error }}</p> {# ★修正点: 直接Tailwindクラスを適用 #}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
             <div class="flex justify-end space-x-3 mt-6">
-                <a href="{{ url_for('index')}}" class="inline-block bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md shadow-sm transition duration-300">
+                <a href="{{ url_for('index') }}" class="inline-block bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md shadow-sm transition duration-300">
                     キャンセル
                 </a>
-                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4  rounded-md shadow-md transition duration-300">
-                    更新
-                </button>
+                {{ form.submit(class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-300") }}
             </div>
         </form>
 
