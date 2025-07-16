@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シンプルなTo-Doリスト</title>
+    <!-- Tailwind CSSをCDNで読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Interフォントを適用 */
+        body {
+            font-family: "Inter", sans-serif;
+        }
+        /* 完了済みタスクのスタイル */
+        .task-done {
+            text-decoration: line-through;
+            color: #6b7280; /* Gray-500 */
+        }
+        /* @apply はCDNでは動作しないため、直接クラスを適用 */
+        /* .filter-button.active, .sort-button.active {
+            @apply bg-blue-600; 
+        } */
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">To-Doリスト</h1>
+
+        <!-- Flashメッセージの表示エリア -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="mb-4">
+                {% for category, message in messages %}
+                    <li class="p-2 rounded-md {% if category == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                        {{ message }}
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        {% if session.user_id %}
+            <!-- タスク追加フォーム -->
+            <form action="{{ url_for('tasks.add_task') }}" method="post" class="mb-6 flex space-x-2">
+                {{ task_form.csrf_token }} {# CSRFトークンを自動で挿入 #}
+                {{ task_form.task_content(class="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder="新しいタスクを入力") }}
+                {{ task_form.submit(class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-300") }}
+            </form>
+            {% if task_form.task_content.errors %}
+                {% for error in task_form.task_content.errors %}
+                    <p class="text-red-600 text-sm mt-1 text-left mb-4">{{ error }}</p> 
+                {% endfor %}
+            {% endif %}
+
+            <!-- フィルタリングオプション -->
+            <div class="mb-4 text-center">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">フィルター:</h3>
+                <div class="flex justify-center space-x-2">
+                    <a href="{{ url_for('tasks.index', status='all', sort=current_sort) }}" 
+                       class="filter-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded-md transition duration-300 
+                              {% if current_status == 'all' %}bg-blue-500 text-white{% endif %}"> 
+                        すべて
+                    </a>
+                    <a href="{{ url_for('tasks.index', status='active', sort=current_sort) }}" 
+                       class="filter-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded-md transition duration-300 
+                              {% if current_status == 'active' %}bg-blue-500 text-white{% endif %}"> 
+                        未完了
+                    </a>
+                    <a href="{{ url_for('tasks.index', status='done', sort=current_sort) }}" 
+                       class="filter-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded-md transition duration-300 
+                              {% if current_status == 'done' %}bg-blue-500 text-white{% endif %}"> 
+                        完了済み
+                    </a>
+                </div>
+            </div>
+
+            <!-- 並べ替えオプション -->
+            <div class="mb-6 text-center">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">並べ替え:</h3>
+                <div class="flex justify-center space-x-2">
+                    <a href="{{ url_for('tasks.index', status=current_status, sort='newest') }}" 
+                       class="sort-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded-md transition duration-300 
+                              {% if current_sort == 'newest' %}bg-blue-500 text-white{% endif %}">
+                        新しい順
+                    </a>
+                    <a href="{{ url_for('tasks.index', status=current_status, sort='oldest') }}" 
+                       class="sort-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded-md transition duration-300 
+                              {% if current_sort == 'oldest' %}bg-blue-500 text-white{% endif %}">
+                        古い順
+                    </a>
+                    <a href="{{ url_for('tasks.index', status=current_status, sort='alphabetical') }}" 
+                       class="sort-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded-md transition duration-300 
+                              {% if current_sort == 'alphabetical' %}bg-blue-500 text-white{% endif %}">
+                        アルファベット順
+                    </a>
+                </div>
+            </div>
+
+            <!-- タスクリスト -->
+            {% if tasks %}
+                <ul class="space-y-3">
+                    {% for task in tasks %}
+                        <li class="flex items-center justify-between p-3 bg-gray-50 rounded-md shadow-sm border border-gray-200">
+                            <span class="flex-grow text-lg {% if task.done %}task-done{% endif %}">{{ task.task }}</span>
+                            <div class="flex items-center space-x-2">
+                                <!-- 編集ボタン -->
+                                <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}" 
+                                   class="bg-gray-400 hover:bg-gray-500 text-white text-sm font-bold py-1 px-3 rounded-md transition duration-300">
+                                    編集
+                                </a>
+                                <!-- 完了/未完了切り替えボタン -->
+                                <a href="{{ url_for('tasks.toggle_task', task_id=task.id) }}" 
+                                   class="{% if task.done %}bg-yellow-500 hover:bg-yellow-600{% else %}bg-green-500 hover:bg-green-600{% endif %} text-white text-sm font-bold py-1 px-3 rounded-md transition duration-300">
+                                    {% if task.done %}未完了に{% else %}完了に{% endif %}
+                                </a>
+                                <!-- 削除ボタン -->
+                                <a href="{{ url_for('tasks.delete_task', task_id=task.id) }}" 
+                                   class="bg-red-500 hover:bg-red-600 text-white text-sm font-bold py-1 px-3 rounded-md transition duration-300">
+                                    削除
+                                </a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-center text-gray-500 mt-4">
+                    {% if session.user_id %}
+                        まだタスクがありません。新しいタスクを追加しましょう！
+                    {% else %}
+                        ログインしてタスクを管理しましょう！
+                    {% endif %}
+                </p>
+            {% endif %}
+
+        {% else %} {# ログインしていない場合 #}
+            <p class="text-center text-gray-600 text-lg mt-8">
+                To-Doリストを利用するには、<a href="{{ url_for('auth.login') }}" class="text-blue-500 hover:underline">ログイン</a>または<a href="{{ url_for('auth.register') }}" class="text-blue-500 hover:underline ml-1">新規登録</a>してください。
+            </p>
+        {% endif %}
+
+        <p class="mt-8 text-sm text-gray-500 text-center">シンプルなTo-Doリスト with Gemini</p>
+    </div>
+</body>
+</html>

@@ -28,7 +28,7 @@
             {% endif %}
         {% endwith %}
 
-        <form action="{{ url_for('edit_task', task_id=task.id)}}" method="post" class="space-y-4">
+        <form action="{{ url_for('tasks.edit_task', task_id=task.id)}}" method="post" class="space-y-4">
             {{ form.csrf_token }} 
 
             <div>
@@ -36,13 +36,13 @@
                 {{ form.task_content(class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg", placeholder="タスク内容を入力") }}
                 {% if form.task_content.errors %}
                     {% for error in form.task_content.errors %}
-                        <p class="text-red-600 text-sm mt-1 text-left">{{ error }}</p> {# ★修正点: 直接Tailwindクラスを適用 #}
+                        <p class="text-red-600 text-sm mt-1 text-left">{{ error }}</p> 
                     {% endfor %}
                 {% endif %}
             </div>
             
             <div class="flex justify-end space-x-3 mt-6">
-                <a href="{{ url_for('index') }}" class="inline-block bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md shadow-sm transition duration-300">
+                <a href="{{ url_for('tasks.index') }}" class="inline-block bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md shadow-sm transition duration-300">
                     キャンセル
                 </a>
                 {{ form.submit(class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-300") }}
