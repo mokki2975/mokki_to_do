@@ -3,37 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ユーザー登録 - To-Doリスト</title>
+    <title>ログイン - To-Doリスト</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: "Inter", sans-serif;}
+        body { font-family: "Inter", sans-serif; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm text-center ">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">ユーザー登録</h1>
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">ログイン</h1>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <ul class="mb-4">
-                    {% for category, message in messages %}
-                        <li class="p-2 rounded-md {% if category == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
-                            {{ message }}
-                        </li>
-                    {% endfor %}
+                {% for category, message in messages %}
+                    <li class="p-2 rounded-md {% if category == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                        {{ message }}
+                    </li>
+                {% endfor %}
                 </ul>
             {% endif %}
         {% endwith %}
 
-        <form action="{{ url_for('register') }}" method="post" class="space-y-4">
-            {{ form.csrf_token}}
+        <form action="{{ url_for('auth.login') }}" method="post" class="space-y-4">
+            {{ form.csrf_token }} {# CSRFトークンを自動で挿入 #}
+
             <div>
                 {{ form.username.label(class="block text-left text-sm font-medium text-gray-700") }}
                 {{ form.username(class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", placeholder="ユーザー名を入力") }}
                 {% if form.username.errors %}
-                     {% for error in form.username.errors %}
-                         <p class="text-red-600 text-sm mt-1 text-left">{{ error }}</p>
-                     {% endfor %}
+                    {% for error in form.username.errors %}
+                        <p class="text-red-600 text-sm mt-1 text-left">{{ error }}</p> 
+                    {% endfor %}
                 {% endif %}
             </div>
             <div>
@@ -41,7 +42,7 @@
                 {{ form.password(class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", placeholder="パスワードを入力") }}
                 {% if form.password.errors %}
                     {% for error in form.password.errors %}
-                        <p class="text-red-600 text-sm mt-1 text-left">{{ error }}</p> {# ★修正点 #}
+                        <p class="text-red-600 text-sm mt-1 text-left">{{ error }}</p> 
                     {% endfor %}
                 {% endif %}
             </div>
@@ -49,7 +50,7 @@
         </form>
 
         <p class="mt-4 text-sm text-gray-600">
-            既にアカウントをお持ちですか？<a href="{{ url_for('login') }}" class="text-blue-500 hover: underline">ログインはこちら</a>
+            アカウントをお持ちでないですか？ <a href="{{ url_for('auth.register') }}" class="text-blue-500 hover:underline">新規登録はこちら</a>
         </p>
     </div>
 </body>
