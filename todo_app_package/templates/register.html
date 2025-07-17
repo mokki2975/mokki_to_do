@@ -1,3 +1,7 @@
+{% if current_user.is_authenticated %}
+    <script>window.location.href = "{{ url_for('tasks.index') }}";</script>
+    <meta http-equiv="refresh" content="0;url={{ url_for('tasks.index') }}">
+{% endif %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>

@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from .extensions import db
 from .models import User
 from .forms import RegistrationForm, LoginForm
+from flask_login import login_user, logout_user, login_required, current_user
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -32,18 +33,18 @@ def login():
         user = User.query.filter_by(username=username).first()
 
         if user and check_password_hash(user.password, password):
-            session['user_id'] = user.id
-            session['username'] = user.username
+            login_user(user)
             flash('ログインしました！', 'success')
-            return redirect(url_for('tasks.index'))
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('tasks.index'))
         else:
             flash('ユーザー名またはパスワードが間違っています。', 'error')
             return render_template('login.html', form=form)
     return render_template('login.html', form=form)
 
 @auth_bp.route('/logout')
+@login_required
 def logout():
-    session.pop('user_id', None)
-    session.pop('username', None)
+    logout_user()
     flash('ログアウトしました。', 'success')
     return redirect(url_for('tasks.index'))

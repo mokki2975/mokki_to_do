@@ -1,27 +1,30 @@
 from flask import Flask, session
 import os
-from .extensions import db
+from .extensions import db, login_manager
 from werkzeug.security import generate_password_hash
 import click
+from .models import User
 
 def create_app():
     app = Flask(__name__)
 
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.root_path, '..', 'database.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
     app.secret_key = 'akichan2975'
 
     db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
 
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+    
     from .auth import auth_bp
     from .tasks import tasks_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(tasks_bp)
-
-    with app.app_context():
-        init_db()
 
     @app.cli.command("init-db")
     def init_db_command():
@@ -55,11 +58,6 @@ def create_app():
         click.echo("データベースの初期化が完了しました。")
 
     return app
-
-def init_db():
-    from .models import User, Task
-    db.create_all()
-    print("データベーステーブルの作成が完了しました。")
 
 if __name__ == '__main__':
     app = create_app()
