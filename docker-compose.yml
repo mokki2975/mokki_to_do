@@ -1,25 +1,39 @@
-# Docker Composeファイルのバージョン指定
-    version: '3.8'
 
-    # サービス（コンテナ）の定義
-    services:
-      web:
-        # 現在のディレクトリにあるDockerfileを使ってイメージをビルド
-        build: .
-        # ホストのポート5000をコンテナのポート5000にマッピング
-        ports:
-          - "5000:5000"
-        # ホストの現在のディレクトリをコンテナの/appにマウント
-        # これにより、ホスト側のコードを変更するとコンテナ内にも反映される（開発時に便利）
-        volumes:
-          - .:/app
-        # コンテナ起動時に実行するコマンド（DockerfileのCMDを上書き）
-        # 開発時には自動リロードが有効なflask run --debugを使う
-        command: flask run --host=0.0.0.0 --port=5000 --debug
-        # 環境変数を設定
-        environment:
-          FLASK_APP: app
-          FLASK_ENV: development # 開発環境であることを示す（Flask 1.x以降で推奨）
-          # FLASK_DEBUG: 1 # Flask 1.x以前でデバッグモードを有効にする場合
-          SECRET_KEY: mokki2975 # app.pyのsecret_keyと同じ値を設定
-    
+services:
+  db:
+    image: postgres:13-alpine # PostgreSQLのバージョン13の軽量版イメージを使用
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # データベースの永続化
+    environment:
+      POSTGRES_DB: tododb # データベース名
+      POSTGRES_USER: user # データベースユーザー名
+      POSTGRES_PASSWORD: password # データベースパスワード
+    ports:
+      - "5432:5432" # ホストの5432ポートをコンテナの5432ポートにマッピング
+
+    healthcheck: # dbサービスのヘルスチェックを設定
+      test: ["CMD-SHELL", "pg_isready -U user -d tododb"] # userユーザーでtododbに接続できるかチェック
+      interval: 5s # 5秒ごとにチェック
+      timeout: 5s # 5秒でタイムアウト
+      retries: 5 # 5回リトライ
+      start_period: 10s # 起動後10秒間はエラーを無視 (db起動に時間がかかるため)
+
+  web:
+    build: . # カレントディレクトリのDockerfileを使ってイメージをビルド
+    ports:
+      - "5000:5000" # Flaskアプリのポートマッピング
+    volumes:
+      - .:/app # ホストのコードをコンテナにマウント（開発時変更を即反映）
+    environment:
+      FLASK_APP: app # Flaskアプリケーションのエントリポイント
+      FLASK_ENV: development # 開発環境であることを示す
+      DATABASE_URL: postgresql://user:password@db:5432/tododb # PostgreSQLへの接続URL
+      SECRET_KEY: akichan2975 # FlaskのSECRET_KEYを設定（__init__.pyと揃える）
+    depends_on:
+      db: # ここはサービス名をキーとした辞書形式になります
+        condition: service_healthy
+    command: >
+      sh -c "flask init-db && flask run --host=0.0.0.0" # アプリ起動コマンド
+
+volumes:
+  postgres_data: # データベースの永続化用ボリューム
