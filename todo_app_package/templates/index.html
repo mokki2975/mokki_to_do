@@ -39,6 +39,12 @@
         {% endwith %}
 
         {% if current_user.is_authenticated %}
+            <div class="mb-4 flex justify-between items-center text-gray-700">
+                <span class="text-lg font-semibold">こんにちは、{{ current_user.username }}さん！</span>
+                <a href="{{ url_for('auth.logout') }}" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-md shadow-md transition duration-300">
+                    ログアウト
+                </a>
+            </div>
             <!-- タスク追加フォーム -->
             <form action="{{ url_for('tasks.add_task') }}" method="post" class="mb-6 flex space-x-2">
                 {{ task_form.csrf_token }} {# CSRFトークンを自動で挿入 #}
