@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>シンプルなTo-Doリスト</title>
-    <!-- Tailwind CSSをCDNで読み込み -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Interフォントを適用 */
@@ -39,7 +38,7 @@
             {% endif %}
         {% endwith %}
 
-        {% if session.user_id %}
+        {% if current_user.is_authenticated %}
             <!-- タスク追加フォーム -->
             <form action="{{ url_for('tasks.add_task') }}" method="post" class="mb-6 flex space-x-2">
                 {{ task_form.csrf_token }} {# CSRFトークンを自動で挿入 #}
@@ -124,7 +123,7 @@
                 </ul>
             {% else %}
                 <p class="text-center text-gray-500 mt-4">
-                    {% if session.user_id %}
+                    {% if current_user.is_authenticated %}
                         まだタスクがありません。新しいタスクを追加しましょう！
                     {% else %}
                         ログインしてタスクを管理しましょう！
